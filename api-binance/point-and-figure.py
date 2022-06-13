@@ -21,8 +21,7 @@ pointChanges = []
 for chg in changes:
     pointChanges += [sign(chg)] * abs(chg)
 
-symbol = {-1:'o',
-           1:'x'}
+symbol = ['o','x']
 
 chgStart = START
 for ichg, chg in enumerate(changes):
@@ -30,7 +29,7 @@ for ichg, chg in enumerate(changes):
     y = [chgStart + i * BOX * sign(chg) for i in range(abs(chg))] 
     chgStart += BOX * sign(chg) * (abs(chg)-2)
     ax.scatter(x, y,
-               marker=symbol[sign(chg)],
+               marker=symbol[chg > 0],
                s=175)   #<----- control size of scatter symbol
 
 ax.set_xlim(0, len(changes)+1)
