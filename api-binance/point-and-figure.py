@@ -1,7 +1,11 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from matplotlib.ticker import NullFormatter, LogLocator
+from matplotlib.ticker import (
+    NullFormatter,
+    FormatStrFormatter,
+    LogLocator,
+)
 
 BOX = pd.Series(1.0 * 1.05)
 START = 1.05**120
@@ -38,6 +42,7 @@ ax.set_xlim(0, len(changes)+1)
 ax.set_yscale('log')
 ax.grid(True)
 ax.yaxis.set_minor_formatter(NullFormatter())
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 ax.yaxis.set_major_locator(LogLocator(1.05))
 fig.savefig('pointandfigure.png')
 plt.show()
