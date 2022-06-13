@@ -26,12 +26,13 @@ symbol = ['o','x']
 chgStart = START
 for ichg, chg in enumerate(changes):
     x = [ichg+1] * abs(chg)
-    y = [chgStart + i * BOX * sign(chg) for i in range(abs(chg))] 
-    chgStart += BOX * sign(chg) * (abs(chg)-2)
+    y = [chgStart * BOX ** (i * sign(chg)) for i in range(abs(chg))]
+    chgStart *= BOX ** ((abs(chg)-2) * sign(chg))
     ax.scatter(x, y,
                marker=symbol[chg > 0],
                s=175)   #<----- control size of scatter symbol
 
 ax.set_xlim(0, len(changes)+1)
+ax.set_yscale('log')
 fig.savefig('pointandfigure.png')
 plt.show()
