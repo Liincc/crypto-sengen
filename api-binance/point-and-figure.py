@@ -15,7 +15,7 @@ fig = plt.figure(figsize=(5, 10))
 ax = fig.add_axes([.15, .15, .7, .7])
 
 def sign(val):
-    return val / abs(val)
+    return 1 if val > 0 else -1
 
 pointChanges = []
 for chg in changes:
