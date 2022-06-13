@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
+from matplotlib.ticker import NullFormatter, LogLocator
 
 BOX = pd.Series(1.0 * 1.05)
-START = 365
+START = 1.05**120
 changes = (8, -3, 4, -4, 12, -3, 7, -3, 5, -9, 3)
 
 # one way to force dimensions is to set the figure size:
@@ -34,5 +36,8 @@ for ichg, chg in enumerate(changes):
 
 ax.set_xlim(0, len(changes)+1)
 ax.set_yscale('log')
+ax.grid(True)
+ax.yaxis.set_minor_formatter(NullFormatter())
+ax.yaxis.set_major_locator(LogLocator(1.05))
 fig.savefig('pointandfigure.png')
 plt.show()
