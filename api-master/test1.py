@@ -3,6 +3,7 @@ from ast import Pass, Sub
 from fileinput import filename
 from functools import total_ordering
 from lib2to3.pytree import convert
+from logging import exception
 from multiprocessing.sharedctypes import Value
 from operator import contains
 from threading import Thread
@@ -252,45 +253,36 @@ excel_tickers_ftx = [coin.split('/USD')[0] + "USD" for coin in total_ftx]
 xlApp = xw.App(visible=True)
 app = xw.apps.active
 
+test_tickers = ['1INCHUSD', 'BTCUSD', 'ADAUSD']
+
     # Checks if the crypto pair HASN'T already been charted
 directory = f"{os.path.dirname(__file__)}\\MCCHARTS"
 onlyfiles = [f for f in os.listdir(directory) if os.path.join(directory, f)]
-# for crypto in excel_tickers_cryptocom:
-    # try:
-    #     wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsm")
-    #     recent_cell = wb.sheets['table (1)'].range('A2').value
-    #     if recent_cell != btc_cell:
-    #         break
-    # except:
-    #     pass 
-    # if any(crypto in x for x in onlyfiles):
-    #     print(f"{crypto} is already in the directory")
-    #     ##Charts a NEW chart that hasn't been listed or charted before
-    # else:
-    #     try:
-    #         print(f"creating a new file for {crypto}")
-    #         # wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
-    #         original = (f'{os.path.dirname(__file__)}\\MCCHARTS\\000GOLD.xlsm')
-    #         target = (f'{os.path.dirname(__file__)}\\MCCHARTS\\000GOLDcopy.xlsm')
-    #         shutil.copyfile(original, target)
-
-    #         new_wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\000GOLDcopy.xlsm")
-    #         my_values = wb.sheets['Sheet1'].range('A3:F1200').value ## A2 Should be changed to A3 to plot today_utc-1 data for new crypos added to MCCHARTS 
-    #         new_wb.sheets['table (1)'].range('A5:F5').value = my_values
-    #         wb.close()
-    #         new_wb.save()
-    #         new_wb.close()
-
-    #         os.rename(f"{os.path.dirname(__file__)}\\MCCHARTS\\000GOLDcopy.xlsm", f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
-    #         crypto_wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
-    #         macro_vba = xlApp.api.Application.Run('CreateNew')
-    #         macro_vba()
-    #         if len(crypto_wb.app.books) >= 1:
-    #             crypto_wb.app.quit()
-    #         else:
-    #             crypto_wb.close()
-    #     except:
-    #         pass
+# def new_chart(crypto):
+for crypto in test_tickers:
+    if any(crypto in x for x in onlyfiles):
+        print(f"{crypto} is already in the directory")
+        ##Charts a NEW chart that hasn't been listed or charted before
+    else:
+        try:
+            print(f"creating a new file for {crypto}")
+            wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
+            new_wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\000GOLD.xlsm")
+            new_wb.save(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
+            my_values = wb.sheets['Sheet1'].range('A3:F1200').value ## A2 Should be changed to A3 to plot today_utc-1 data for new crypos added to MCCHARTS 
+            new_wb.sheets['table (1)'].range('A5:F5').value = my_values
+            wb.close()
+            new_wb.save()
+            macro_vba = xlApp.api.Application.Run('CreateNew')
+            macro_vba()
+            new_wb.close()
+            if len(new_wb.app.books) >= 1:
+                new_wb.app.quit()
+            else:
+                new_wb.close()
+        except Exception as e:
+            # print(e)
+            pass
 
 
     ## MACRO IMPLEMENTATION SCRIPTS ##
@@ -357,113 +349,113 @@ btc_wb.close()
 
 
     ## CHARTS THE 'DAILY UPDATE' / charts that ALREADY have a .xlsm file created
-for crypto in excel_tickers_binance:
-    try:
-        wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
-        wb_xlsx = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
-        recent_xlsx = str(wb_xlsx.sheets['Sheet1'].range('A2').value)
-        recent_xlsm = str(wb.sheets['table (1)'].range('A5').value)
-        if recent_xlsx != btc_cell:
-            print(f"broke the loop because {crypto} has no data for {recent_xlsx}")
-            wb.close()
-            wb.app.quit()
-            break   
-        elif recent_xlsm == recent_xlsx:
-            print(f"{crypto} already charted")
-            wb.close()
-            wb_xlsx.close()
-            wb.app.quit()
-            # xw.App().kill()
-            continue
-        else:
-            curr_date = wb.sheets['table (1)'].range('A5').options(dates=dt.date, convert=None).value #A5 Cell selected since this is the most recent date charted
-            curr_date_str = curr_date.strftime("%Y-%m-%d")
-            curr_date_str = curr_date_str.replace('-', '/')
-            date_range = pd.date_range(start=curr_date_str,end=today_utc,freq='d')
-            period_charting = (len(date_range)) 
-            insert_row = period_charting + 4
+# for crypto in excel_tickers_binance:
+#     try:
+#         wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
+#         wb_xlsx = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
+#         recent_xlsx = str(wb_xlsx.sheets['Sheet1'].range('A2').value)
+#         recent_xlsm = str(wb.sheets['table (1)'].range('A5').value)
+#         if recent_xlsx != btc_cell:
+#             print(f"broke the loop because {crypto} has no data for {recent_xlsx}")
+#             wb.close()
+#             wb.app.quit()
+#             break   
+#         elif recent_xlsm == recent_xlsx:
+#             print(f"{crypto} already charted")
+#             wb.close()
+#             wb_xlsx.close()
+#             wb.app.quit()
+#             # xw.App().kill()
+#             continue
+#         else:
+#             curr_date = wb.sheets['table (1)'].range('A5').options(dates=dt.date, convert=None).value #A5 Cell selected since this is the most recent date charted
+#             curr_date_str = curr_date.strftime("%Y-%m-%d")
+#             curr_date_str = curr_date_str.replace('-', '/')
+#             date_range = pd.date_range(start=curr_date_str,end=today_utc,freq='d')
+#             period_charting = (len(date_range)) 
+#             insert_row = period_charting + 4
 
-            print(f"Updating chart for {crypto}")
-            my_values = wb_xlsx.sheets['Sheet1'].range(f'A2:F{period_charting}').value
-            wb.sheets['table (1)'].range(f"5:{insert_row}").insert('down')
-            wb.sheets['table (1)'].range('A5:F5').value = my_values
-            wb_xlsx.close()
-            macro_update = xlApp.api.Application.Run('CreateDaily')
-            macro_update()
-            # wb.sheets['table (1)'].range(f'A{insert_row}:T{insert_row-1}').api.Delete() #This needs to be done on VBA? due to pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, None, None, None, 0, -2146788248), None)
-            if len(wb.app.books) >= 1:
-                wb.app.quit()
-            else:
-                wb.close()
-    except:
-        pass
+#             print(f"Updating chart for {crypto}")
+#             my_values = wb_xlsx.sheets['Sheet1'].range(f'A2:F{period_charting}').value
+#             wb.sheets['table (1)'].range(f"5:{insert_row}").insert('down')
+#             wb.sheets['table (1)'].range('A5:F5').value = my_values
+#             wb_xlsx.close()
+#             macro_update = xlApp.api.Application.Run('CreateDaily')
+#             macro_update()
+#             # wb.sheets['table (1)'].range(f'A{insert_row}:T{insert_row-1}').api.Delete() #This needs to be done on VBA? due to pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, None, None, None, 0, -2146788248), None)
+#             if len(wb.app.books) >= 1:
+#                 wb.app.quit()
+#             else:
+#                 wb.close()
+#     except:
+#         pass
 
-class thr1(Thread):
-    def run(self):
-        for crypto in excel_tickers_binance:
-            if any(crypto in x for x in onlyfiles):
-                try:
-                    wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
-                    curr_date = wb.sheets['table (1)'].range('A5').options(dates=dt.date, convert=None).value #A5 Cell selected since this is the most recent date charted
-                    curr_date_str = curr_date.strftime("%Y-%m-%d")
-                    curr_date_str = curr_date_str.replace('-', '/')
-                    date_range = pd.date_range(start=curr_date_str,end=today_utc,freq='d')
-                    period_charting = (len(date_range)) 
-                    insert_row = period_charting + 4
+# class thr1(Thread):
+#     def run(self):
+#         for crypto in excel_tickers_binance:
+#             if any(crypto in x for x in onlyfiles):
+#                 try:
+#                     wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
+#                     curr_date = wb.sheets['table (1)'].range('A5').options(dates=dt.date, convert=None).value #A5 Cell selected since this is the most recent date charted
+#                     curr_date_str = curr_date.strftime("%Y-%m-%d")
+#                     curr_date_str = curr_date_str.replace('-', '/')
+#                     date_range = pd.date_range(start=curr_date_str,end=today_utc,freq='d')
+#                     period_charting = (len(date_range)) 
+#                     insert_row = period_charting + 4
 
-                    wb_xlsx = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
-                    my_values = wb_xlsx.sheets['Sheet1'].range(f'A2:F{period_charting}').value
-                    wb.sheets['table (1)'].range(f"5:{insert_row}").insert('down')
-                    wb.sheets['table (1)'].range('A5:F5').value = my_values
-                    wb_xlsx.close()
-                    print(f"Charting {crypto} in Thread 1")
-                    macro_update = xlApp.api.Application.Run('Create')
-                    macro_update()
-                    # wb.sheets['table (1)'].range(f'A{insert_row}:T{insert_row-1}').api.Delete() #This needs to be done on VBA? due to pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, None, None, None, 0, -2146788248), None)
-                    if len(wb.app.books) >= 1:
-                        wb.app.quit()
-                    else:
-                        wb.close()
-                except:
-                    pass
+#                     wb_xlsx = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
+#                     my_values = wb_xlsx.sheets['Sheet1'].range(f'A2:F{period_charting}').value
+#                     wb.sheets['table (1)'].range(f"5:{insert_row}").insert('down')
+#                     wb.sheets['table (1)'].range('A5:F5').value = my_values
+#                     wb_xlsx.close()
+#                     print(f"Charting {crypto} in Thread 1")
+#                     macro_update = xlApp.api.Application.Run('Create')
+#                     macro_update()
+#                     # wb.sheets['table (1)'].range(f'A{insert_row}:T{insert_row-1}').api.Delete() #This needs to be done on VBA? due to pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, None, None, None, 0, -2146788248), None)
+#                     if len(wb.app.books) >= 1:
+#                         wb.app.quit()
+#                     else:
+#                         wb.close()
+#                 except:
+#                     pass
 
-class thr2(Thread):
-    def run(self):
-        for crypto in excel_tickers_ftx:
-            if any(crypto in x for x in onlyfiles):
-                try:
-                    wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
-                    curr_date = wb.sheets['table (1)'].range('A5').options(dates=dt.date, convert=None).value #A5 Cell selected since this is the most recent date charted
-                    curr_date_str = curr_date.strftime("%Y-%m-%d")
-                    curr_date_str = curr_date_str.replace('-', '/')
-                    date_range = pd.date_range(start=curr_date_str,end=today_utc,freq='d')
-                    period_charting = (len(date_range)) 
-                    insert_row = period_charting + 4
+# class thr2(Thread):
+#     def run(self):
+#         for crypto in excel_tickers_ftx:
+#             if any(crypto in x for x in onlyfiles):
+#                 try:
+#                     wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
+#                     curr_date = wb.sheets['table (1)'].range('A5').options(dates=dt.date, convert=None).value #A5 Cell selected since this is the most recent date charted
+#                     curr_date_str = curr_date.strftime("%Y-%m-%d")
+#                     curr_date_str = curr_date_str.replace('-', '/')
+#                     date_range = pd.date_range(start=curr_date_str,end=today_utc,freq='d')
+#                     period_charting = (len(date_range)) 
+#                     insert_row = period_charting + 4
 
-                    wb_xlsx = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
-                    my_values = wb_xlsx.sheets['Sheet1'].range(f'A2:F{period_charting}').value
-                    wb.sheets['table (1)'].range(f"5:{insert_row}").insert('down')
-                    wb.sheets['table (1)'].range('A5:F5').value = my_values
-                    wb_xlsx.close()
-                    print(f"Charting {crypto} in Thread 2")
-                    macro_update = xlApp.api.Application.Run('Create')
-                    macro_update()
-                    # wb.sheets['table (1)'].range(f'A{insert_row}:T{insert_row-1}').api.Delete() #This needs to be done on VBA? due to pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, None, None, None, 0, -2146788248), None)
-                    if len(wb.app.books) >= 1:
-                        wb.app.quit()
-                    else:
-                        wb.close()
-                except:
-                    pass
+#                     wb_xlsx = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
+#                     my_values = wb_xlsx.sheets['Sheet1'].range(f'A2:F{period_charting}').value
+#                     wb.sheets['table (1)'].range(f"5:{insert_row}").insert('down')
+#                     wb.sheets['table (1)'].range('A5:F5').value = my_values
+#                     wb_xlsx.close()
+#                     print(f"Charting {crypto} in Thread 2")
+#                     macro_update = xlApp.api.Application.Run('Create')
+#                     macro_update()
+#                     # wb.sheets['table (1)'].range(f'A{insert_row}:T{insert_row-1}').api.Delete() #This needs to be done on VBA? due to pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, None, None, None, 0, -2146788248), None)
+#                     if len(wb.app.books) >= 1:
+#                         wb.app.quit()
+#                     else:
+#                         wb.close()
+#                 except:
+#                     pass
 
-t1 = thr1()
-t2 = thr2()
+# t1 = thr1()
+# t2 = thr2()
 
-t1.run()
-t2.run()
+# t1.run()
+# t2.run()
 
-t1.join()
-t2.join()
+# t1.join()
+# t2.join()
 
 
     ## FINISHED TESTING ##
