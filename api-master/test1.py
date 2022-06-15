@@ -258,32 +258,83 @@ test_tickers = ['1INCHUSD', 'BTCUSD', 'ADAUSD']
     # Checks if the crypto pair HASN'T already been charted
 directory = f"{os.path.dirname(__file__)}\\MCCHARTS"
 onlyfiles = [f for f in os.listdir(directory) if os.path.join(directory, f)]
-# def new_chart(crypto):
+
+def new_chart(crypto):
+    print(f"creating a new file for {crypto}")
+    wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
+    new_wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\000GOLD.xlsm")
+    new_wb.save(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
+    my_values = wb.sheets['Sheet1'].range('A3:F1200').value ## A2 Should be changed to A3 to plot today_utc-1 data for new crypos added to MCCHARTS 
+    new_wb.sheets['table (1)'].range('A5:F5').value = my_values
+    wb.close()
+    new_wb.save()
+    macro_vba = xlApp.api.Application.Run('CreateNew')
+    macro_vba()
+    new_wb.close()
+    if len(new_wb.app.books) >= 1:
+        new_wb.app.quit()
+    else:
+        new_wb.close()
+    ##Charts a NEW chart that hasn't been listed or charted before
 for crypto in test_tickers:
     if any(crypto in x for x in onlyfiles):
         print(f"{crypto} is already in the directory")
-        ##Charts a NEW chart that hasn't been listed or charted before
     else:
         try:
-            print(f"creating a new file for {crypto}")
-            wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
-            new_wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\000GOLD.xlsm")
-            new_wb.save(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
-            my_values = wb.sheets['Sheet1'].range('A3:F1200').value ## A2 Should be changed to A3 to plot today_utc-1 data for new crypos added to MCCHARTS 
-            new_wb.sheets['table (1)'].range('A5:F5').value = my_values
-            wb.close()
-            new_wb.save()
-            macro_vba = xlApp.api.Application.Run('CreateNew')
-            macro_vba()
-            new_wb.close()
-            if len(new_wb.app.books) >= 1:
-                new_wb.app.quit()
-            else:
-                new_wb.close()
+            new_chart(crypto)
         except Exception as e:
             # print(e)
             pass
 
+
+btc_wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\BTCUSD.xlsx")
+btc_cell = str(btc_wb.sheets['Sheet1'].range('A2').value)
+btc_wb.close()
+
+def update_chart(crypto, wb, wb_xlsx):   
+    curr_date = wb.sheets['table (1)'].range('A5').options(dates=dt.date, convert=None).value #A5 Cell selected since this is the most recent date charted
+    curr_date_str = curr_date.strftime("%Y-%m-%d")
+    curr_date_str = curr_date_str.replace('-', '/')
+    date_range = pd.date_range(start=curr_date_str,end=today_utc,freq='d')
+    period_charting = (len(date_range))
+    insert_row = period_charting + 4
+
+    print(f"Updating chart for {crypto}")
+    my_values = wb_xlsx.sheets['Sheet1'].range(f'A2:F{period_charting}').value
+    wb.sheets['table (1)'].range(f"5:{insert_row}").insert('down')
+    wb.sheets['table (1)'].range('A5:F5').value = my_values
+    wb_xlsx.close()
+    macro_update = xlApp.api.Application.Run('CreateDaily')
+    macro_update()
+    # wb.sheets['table (1)'].range(f'A{insert_row}:T{insert_row-1}').api.Delete() #This needs to be done on VBA? due to pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, None, None, None, 0, -2146788248), None)
+    if len(wb.app.books) >= 1:
+        wb.app.quit()
+    else:
+        wb.close()
+
+    ## CHARTS THE 'DAILY UPDATE' / charts that ALREADY have a .xlsm file created
+for crypto in excel_tickers_binance:
+    try:
+        wb = xw.Book(f"{os.path.dirname(__file__)}\\MCCHARTS\\{crypto}.xlsm")
+        wb_xlsx = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\{crypto}.xlsx")
+        recent_xlsx = str(wb_xlsx.sheets['Sheet1'].range('A2').value)
+        recent_xlsm = str(wb.sheets['table (1)'].range('A5').value)
+        if recent_xlsx != btc_cell:
+            print(f"broke the loop because {crypto} has no data for {recent_xlsx}")
+            wb.close()
+            wb.app.quit()
+            break   
+        elif recent_xlsm == recent_xlsx:
+            print(f"{crypto} already charted")
+            wb.close()
+            wb_xlsx.close()
+            wb.app.quit()
+            # xw.App().kill()
+            continue
+        else:
+            update_chart(crypto, wb, wb_xlsx)
+    except:
+        pass
 
     ## MACRO IMPLEMENTATION SCRIPTS ##
 # import win32com.client
@@ -343,9 +394,9 @@ for crypto in test_tickers:
 #         pass
 
 
-btc_wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\BTCUSD.xlsx")
-btc_cell = str(btc_wb.sheets['Sheet1'].range('A2').value)
-btc_wb.close()
+# btc_wb = xw.Book(f"{os.path.dirname(__file__)}\\master-py-api\\BTCUSD.xlsx")
+# btc_cell = str(btc_wb.sheets['Sheet1'].range('A2').value)
+# btc_wb.close()
 
 
     ## CHARTS THE 'DAILY UPDATE' / charts that ALREADY have a .xlsm file created
